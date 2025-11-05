@@ -24,7 +24,7 @@ def get_list():
         "timestamp":dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     }
 
-@app.route("/departments/<id>",methods=['PUT'])
+@app.route("/departments/<id>",methods=['get'])
 def get_item(id):
     sql = text("""SELECT id,dname,loc,phone,email,established,homepage
                FROM departments WHERE id=:id""")
@@ -75,6 +75,41 @@ def post():
     
     result = conn.execute(sql,{"id":pk})
     resultset = result.mappings().all()
+    MyDB.disconnect()
+
+    return {
+        "result":dict(resultset[0]),
+        "timestamp":dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    }
+
+@app.route("/departments/<id>",methods=['PUT'])
+def put(id):
+
+    conn = MyDB.connect()
+
+    dname = request.form.get("dname")
+    loc = request.form.get("loc")
+    phone = request.form.get("phone")
+    email = request.form.get("email")
+    established = request.form.get("established")
+    homepage = request.form.get("homepage")
+
+    sql = text("""UPDATE departments SET dname=:dname,loc=:loc,email=:email,established=:established,homepage=:homepage
+               WHERE id=:id""")
+    
+    params = {
+        "dname":dname, "loc":loc, "phone":phone,"email":email,"established":established,"homepage":homepage
+    }
+    
+    conn.execute(sql,params)
+    conn.commit()
+
+    sql = text("""SELECT id,danme,loc,phone,email,established FROM departments where id=:id""")
+
+    result = conn.execute(sql,{"id":id})
+    resultset = result.mappings().all()
+    #print(resultset)
+
     MyDB.disconnect()
 
     return {
